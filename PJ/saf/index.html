@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Voting System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        nav {
+            background: var(--gradient-primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        nav .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: all 0.3s ease;
+        }
+
+        nav .nav-link:hover {
+            color: white !important;
+        }
+
+        .hero-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .login-container {
+            max-width: 450px;
+            margin: 4rem auto;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .login-container h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .btn-primary, .btn-login {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-primary:hover, .btn-login:hover {
+            transform: scale(1.02);
+        }
+
+        .candidate-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .candidate-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 20px rgba(13, 110, 253, 0.2);
+        }
+
+        .candidate-card.selected {
+            background: rgba(13, 110, 253, 0.05);
+            border-color: var(--primary-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .progress-item {
+            margin-bottom: 2rem;
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background: #e0e0e0;
+        }
+
+        .progress-bar {
+            background: var(--gradient-primary);
+            transition: width 0.6s ease;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10000;
+        }
+
+        .toast-msg {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            min-width: 300px;
+        }
+
+        .toast-msg.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast-msg.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            .login-container {
+                margin: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <i class="fas fa-vote-yea"></i> Voting System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showHome()">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showAdminLogin()">Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <div class="hero-section">
+            <div class="container">
+                <h1><i class="fas fa-check-circle"></i> Secure Online Voting System</h1>
+                <p>Democratic voting made simple, transparent, and secure</p>
+                <button class="btn btn-light btn-lg me-2" onclick="showVoterLogin()">Cast Your Vote</button>
+                <button class="btn btn-outline-light btn-lg" onclick="showResults()">View Results</button>
+            </div>
+        </div>
+
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="card-body">
+                            <i class="fas fa-shield-alt"></i>
+                            <h5 class="card-title">Secure</h5>
+                            <p class="card-text">One vote per voter with secure authentication</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="card-body">
+                            <i class="fas fa-chart-bar"></i>
+                            <h5 class="card-title">Transparent</h5>
+                            <p class="card-text">Real-time vote counting and results</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="card-body">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h5 class="card-title">Accessible</h5>
+                            <p class="card-text">Works on desktop, tablet, and mobile</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voter Login Page -->
+    <div id="voterLoginPage" class="hidden">
+        <div class="login-container">
+            <h2><i class="fas fa-user-check"></i> Voter Login</h2>
+            <form id="voterLoginForm" onsubmit="event.preventDefault(); handleVoterLogin();">
+                <div class="mb-3">
+                    <label for="voterId" class="form-label">Voter ID</label>
+                    <input type="text" class="form-control" id="voterId" required>
+                </div>
+                <div class="mb-3">
+                    <label for="voterSection" class="form-label">Voting Section</label>
+                    <select class="form-control" id="voterSection" required>
+                        <option value="" disabled selected>-- Select Your Voting Section --</option>
+                    </select>
+                </div>
+                    <div id="voterPreview" class="card mt-3 hidden">
+                        <div class="card-body">
+                            <h6 class="card-title" id="voterPreviewName">Voter Name</h6>
+                            <p class="card-text text-muted" id="voterPreviewDetails">Age: - | Gender: -</p>
+                            <p class="mb-0"><strong>Voted:</strong> <span id="voterPreviewVoted" class="badge bg-secondary">No</span></p>
+                        </div>
+                    </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <p class="text-center mt-3">
+                <a href="#" onclick="showHome()" class="text-decoration-none">Back to Home</a>
+            </p>
+            
+        </div>
+    </div>
+
+    <!-- Admin Login Page -->
+    <div id="adminLoginPage" class="hidden">
+        <div class="login-container">
+            <h2><i class="fas fa-lock"></i> Admin Login</h2>
+            <form id="adminLoginForm" onsubmit="event.preventDefault(); handleAdminLogin();">
+                <div class="mb-3">
+                    <label for="adminUsername" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="adminUsername" required>
+                </div>
+                <div class="mb-3">
+                    <label for="adminPassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="adminPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <p class="text-center mt-3">
+                <a href="#" onclick="showHome()" class="text-decoration-none">Back to Home</a>
+            </p>
+            
+        </div>
+    </div>
+
+    <!-- Voting Page -->
+    <div id="votingPage" class="hidden">
+        <div class="container my-5">
+            <h2 class="text-center mb-4">Select Your Candidate</h2>
+            <div class="row mb-3">
+                <div class="col-md-6 offset-md-3 d-flex align-items-end">
+                    <div class="flex-grow-1 me-2">
+                        <label for="sectionSelect" class="form-label">Voting Section</label>
+                        <select id="sectionSelect" class="form-control">
+                            <option value="0">-- All Sections --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button id="whichSectionBtn" class="btn btn-outline-primary" type="button" onclick="showSectionInfo()" title="Which section are you voting in?">Which section?</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section info inline card (hidden by default) -->
+            <div class="row mb-3 hidden" id="sectionInfoRow">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 id="sectionInfoName" class="card-title">Section Name</h5>
+                            <p id="sectionInfoDesc" class="card-text text-muted">Section description</p>
+                            <p class="mb-1"><strong>Start:</strong> <span id="sectionInfoStart">-</span></p>
+                            <p class="mb-1"><strong>End:</strong> <span id="sectionInfoEnd">-</span></p>
+                            <p class="mb-0"><strong>Status:</strong> <span id="sectionInfoStatus" class="badge bg-secondary">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div id="candidatesContainer" class="loading show">
+                        <div class="spinner"></div>
+                        <p class="text-center">Loading candidates...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-8 offset-md-2">
+                    <button class="btn btn-success w-100 btn-lg" onclick="submitVote()">Cast Vote</button>
+                    <button class="btn btn-secondary w-100 btn-lg mt-2" onclick="showHome()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Page -->
+    <div id="resultsPage" class="hidden">
+        <div class="container my-5">
+            <h2 class="text-center mb-4">Election Results</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="number" id="totalVotes">0</div>
+                    <div>Total Votes Cast</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalCandidates">0</div>
+                    <div>Candidates</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="turnoutRate">0%</div>
+                    <div>Participation Rate</div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-8 offset-md-2">
+                    <h4 class="mb-4">Vote Distribution</h4>
+                    <div id="resultsContainer" class="loading show">
+                        <div class="spinner"></div>
+                        <p class="text-center">Loading results...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <button class="btn btn-secondary" onclick="showHome()">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Page -->
+    <div id="adminDashboardPage" class="hidden">
+        <div class="container my-5">
+            <h2 class="mb-4">Admin Dashboard</h2>
+            
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" onclick="switchAdminTab(event, 'voters')">Manage Voters</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchAdminTab(event, 'candidates')">Manage Candidates</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchAdminTab(event, 'sections')">Voting Sections</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" onclick="switchAdminTab(event, 'results')">View Results</button>
+                </li>
+            </ul>
+
+            <!-- Voters Tab -->
+            <div id="votersTab" class="admin-section">
+                <h4>Voters List</h4>
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn btn-primary" onclick="showAddVoterForm()">Add Voter</button>
+                    <button class="btn btn-danger" onclick="deleteAllVoters()">
+                        <i class="fas fa-trash"></i> Delete All Voters
+                    </button>
+                </div>
+                <div id="votersContainer" class="loading show">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Candidates Tab -->
+            <div id="candidatesTab" class="admin-section hidden">
+                <h4>Candidates List</h4>
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn btn-primary" onclick="showAddCandidateForm()">Add Candidate</button>
+                    <button class="btn btn-danger" onclick="deleteAllCandidates()">
+                        <i class="fas fa-trash"></i> Delete All Candidates
+                    </button>
+                </div>
+                <div id="adminCandidatesContainer" class="loading show">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Voting Sections Tab -->
+            <div id="sectionsTab" class="admin-section hidden">
+                <h4>Voting Sections Management</h4>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-plus-circle"></i> Create New Voting Section</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="createSectionForm" onsubmit="event.preventDefault(); createVotingSection();">
+                                    <div class="mb-3">
+                                        <label for="sectionName" class="form-label">Election Name *</label>
+                                        <input type="text" class="form-control" id="sectionName" required 
+                                               minlength="5" maxlength="100">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="sectionDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="sectionDescription" rows="3"
+                                                placeholder="Describe the election purpose and details"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="sectionStartDate" class="form-label">Start Date and Time *</label>
+                                            <input type="datetime-local" class="form-control" id="sectionStartDate" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="sectionEndDate" class="form-label">End Date and Time *</label>
+                                            <input type="datetime-local" class="form-control" id="sectionEndDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> All times are in local timezone
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">
+                                        <i class="fas fa-plus-circle"></i> Create Election Section
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-list"></i> Current Voting Sections</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="sectionsContainer" class="loading show">
+                                    <div class="spinner"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="resultsTab" class="admin-section hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4>Election Results</h4>
+                    <div>
+                        <button class="btn btn-danger btn-lg" onclick="deleteAllResults()" title="Delete all votes and reset voting status">
+                            <i class="fas fa-trash-alt"></i> Clear All Election Results
+                        </button>
+                    </div>
+                </div>
+                <div id="adminResultsContainer" class="loading show">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-danger mt-4" onclick="handleLogout()">Logout</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Online Voting System. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+    let currentUser = null;
+    let selectedCandidate = null;
+    let loadedSections = [];
+    let voterPreviewTimer = null;
+
+    // debounce helper
+    function debounce(fn, delay) {
+        let t = null;
+        return function(...args) {
+            if (t) clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), delay);
+        }
+    }
+
+    // lookup voter details and show preview card
+    async function lookupVoterDetails(voterId) {
+        const preview = document.getElementById('voterPreview');
+        const nameEl = document.getElementById('voterPreviewName');
+        const detailsEl = document.getElementById('voterPreviewDetails');
+        const votedEl = document.getElementById('voterPreviewVoted');
+
+        if (!voterId) {
+            preview.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8080/api/voter/${encodeURIComponent(voterId)}`);
+            if (!res.ok) {
+                // not found
+                nameEl.textContent = 'Voter not found';
+                detailsEl.textContent = '';
+                votedEl.textContent = 'N/A';
+                votedEl.className = 'badge bg-secondary';
+                preview.classList.remove('hidden');
+                return;
+            }
+
+            const data = await res.json();
+            if (data && data.success && data.voter) {
+                const v = data.voter;
+                nameEl.textContent = v.name || v.voterId || 'Unknown';
+                detailsEl.textContent = `Age: ${v.age || '-'} | Gender: ${v.gender || '-'}`;
+                const hasVoted = v.voted === true || v.voted === 'true';
+                votedEl.textContent = hasVoted ? 'Yes' : 'No';
+                votedEl.className = hasVoted ? 'badge bg-success' : 'badge bg-secondary';
+                preview.classList.remove('hidden');
+            } else {
+                nameEl.textContent = 'Voter not found';
+                detailsEl.textContent = '';
+                votedEl.textContent = 'N/A';
+                votedEl.className = 'badge bg-secondary';
+                preview.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error('Error fetching voter details', err);
+            nameEl.textContent = 'Error fetching details';
+            detailsEl.textContent = '';
+            votedEl.textContent = 'N/A';
+            votedEl.className = 'badge bg-secondary';
+            preview.classList.remove('hidden');
+        }
+    }
+
+    const debouncedLookup = debounce((e) => lookupVoterDetails(e.target.value.trim()), 400);
+
+        function hideAll() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('voterLoginPage').classList.add('hidden');
+            document.getElementById('adminLoginPage').classList.add('hidden');
+            document.getElementById('votingPage').classList.add('hidden');
+            document.getElementById('resultsPage').classList.add('hidden');
+            document.getElementById('adminDashboardPage').classList.add('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            toast.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showHome() {
+            hideAll();
+            document.getElementById('homePage').classList.remove('hidden');
+        }
+
+        async function loadVoterSections() {
+            try {
+                const res = await fetch('http://localhost:8080/api/sections');
+                const data = await res.json();
+                const sections = data.sections || [];
+                const select = document.getElementById('voterSection');
+                
+                // Filter only active sections
+                const now = new Date();
+                const activeSections = sections.filter(section => {
+                    const start = new Date(section.startDate);
+                    const end = new Date(section.endDate);
+                    return now >= start && now <= end;
+                });
+
+                if (activeSections.length === 0) {
+                    select.innerHTML = '<option value="" disabled selected>No Active Voting Sections Available</option>';
+                    showToast('No active voting sections available', 'error');
+                } else {
+                    select.innerHTML = '<option value="" disabled selected>-- Select Your Voting Section --</option>' + 
+                        activeSections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading voting sections:', err);
+                showToast('Error loading voting sections', 'error');
+            }
+        }
+
+        function showVoterLogin() {
+            hideAll();
+            document.getElementById('voterLoginPage').classList.remove('hidden');
+            loadVoterSections(); // Load available voting sections
+        }
+
+        function showAdminLogin() {
+            hideAll();
+            document.getElementById('adminLoginPage').classList.remove('hidden');
+        }
+
+        function showResults() {
+            hideAll();
+            document.getElementById('resultsPage').classList.remove('hidden');
+            loadResults();
+        }
+
+        async function handleVoterLogin() {
+            const voterId = document.getElementById('voterId').value.trim();
+            const sectionId = document.getElementById('voterSection').value;
+            
+            if (!voterId) {
+                showToast('Please enter Voter ID', 'error');
+                return;
+            }
+
+            if (!sectionId) {
+                showToast('Please select a voting section', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/voter/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `voterId=${encodeURIComponent(voterId)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUser = { ...data.voter, sectionId };
+                    showToast(`Welcome, ${data.voter.name}!`, 'success');
+                    hideAll();
+                    document.getElementById('votingPage').classList.remove('hidden');
+                    loadCandidates(sectionId);
+                    
+                    // Auto-delete any unassigned votes from this voter
+                    try {
+                        await fetch('http://localhost:8080/api/votes/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `sectionId=0&voterId=${encodeURIComponent(voterId)}`
+                        });
+                    } catch (err) {
+                        console.error('Error cleaning up unassigned votes:', err);
+                    }
+                } else {
+                    showToast(data.message || 'Invalid Voter ID', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('Connection error. Please check if server is running.', 'error');
+            }
+        }
+
+        // Attach input listener to voterId field for live lookup
+        (function attachVoterLookup() {
+            const input = document.getElementById('voterId');
+            if (input) {
+                input.addEventListener('input', debouncedLookup);
+            }
+        })();
+
+        async function handleAdminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            if (!username || !password) {
+                showToast('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUser = { type: 'admin', username };
+                    showToast('Admin login successful', 'success');
+                    hideAll();
+                    document.getElementById('adminDashboardPage').classList.remove('hidden');
+                    loadAdminData();
+                } else {
+                    showToast(data.message || 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                console.error('Admin login error:', error);
+                showToast('Connection error. Please check if server is running.', 'error');
+            }
+        }
+
+        async function loadCandidates(sectionId = null) {
+            try {
+                // If sectionId is provided, use it; otherwise try to get from select
+                let actualSectionId = sectionId;
+                if (!actualSectionId) {
+                    const select = document.getElementById('sectionSelect');
+                    actualSectionId = select ? select.value : null;
+                }
+                
+                if (!actualSectionId) {
+                    showToast('Please select a voting section', 'error');
+                    return;
+                }
+
+                const url = `http://localhost:8080/api/candidates?sectionId=${encodeURIComponent(actualSectionId)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                displayCandidates(data.candidates || []);
+                
+                // If section was passed in, set the select to match
+                if (sectionId) {
+                    const select = document.getElementById('sectionSelect');
+                    if (select) {
+                        select.value = sectionId;
+                    }
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                showToast('Error loading candidates', 'error');
+            }
+        }
+
+        function displayCandidates(candidates) {
+            const container = document.getElementById('candidatesContainer');
+            container.innerHTML = candidates.map(c => `
+                <div class="candidate-card" onclick="selectCandidate(event, ${c.id}, '${c.name}')">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-user-circle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">${c.name}</h5>
+                            <p class="text-primary mb-1"><i class="fas fa-flag me-1"></i> ${c.party || 'Independent'}</p>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-user me-1"></i> ${c.gender || 'Not specified'} 
+                                ${c.age ? `<span class="ms-2"><i class="fas fa-birthday-cake me-1"></i> ${c.age} years</span>` : ''}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCandidate(event, id, name) {
+            document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedCandidate = { id, name };
+            showToast(`Selected: ${name}`, 'info');
+        }
+
+        async function submitVote() {
+            if (!selectedCandidate) {
+                showToast('Please select a candidate', 'error');
+                return;
+            }
+
+            if (!confirm(`Vote for ${selectedCandidate.name}? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const sectionId = document.getElementById('sectionSelect') ? document.getElementById('sectionSelect').value : 0;
+                const response = await fetch('http://localhost:8080/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `voterId=${encodeURIComponent(currentUser.voterId)}&candidateId=${selectedCandidate.id}&sectionId=${sectionId}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Vote recorded successfully!', 'success');
+                    setTimeout(() => showResults(), 1500);
+                } else {
+                    showToast(data.message || 'Voting failed', 'error');
+                }
+            } catch (error) {
+                console.error('Vote error:', error);
+                showToast('Connection error. Please check if server is running.', 'error');
+            }
+        }
+
+        async function loadResults() {
+            try {
+                // Get list of sections first
+                const sectionsRes = await fetch('http://localhost:8080/api/sections');
+                const sectionsData = await sectionsRes.json();
+                const sections = sectionsData.sections || [];
+
+                // For overall totals, fetch /api/results without sectionId
+                const overallRes = await fetch('http://localhost:8080/api/results');
+                const overall = await overallRes.json();
+
+                document.getElementById('totalVotes').textContent = overall.totalVotes || 0;
+                document.getElementById('totalCandidates').textContent = overall.totalCandidates || (overall.candidates ? overall.candidates.length : 0);
+                // compute turnout using registered voters
+                try {
+                    const votersRes2 = await fetch('http://localhost:8080/api/voters');
+                    const votersData2 = await votersRes2.json();
+                    const registered = Array.isArray(votersData2.voters) ? votersData2.voters.length : 0;
+                    const turnout = registered > 0 ? ((overall.totalVotes || 0) / registered * 100).toFixed(1) + '%' : '0%';
+                    document.getElementById('turnoutRate').textContent = turnout;
+                } catch (err) {
+                    document.getElementById('turnoutRate').textContent = 'N/A';
+                }
+
+                const container = document.getElementById('resultsContainer');
+                // For each section, fetch section-specific results and render a card
+                let html = '';
+
+                for (const sec of sections) {
+                    try {
+                        const res = await fetch(`http://localhost:8080/api/results?sectionId=${encodeURIComponent(sec.id)}`);
+                        const data = await res.json();
+                        const candidates = data.candidates || [];
+                        const total = data.totalVotes || candidates.reduce((s, c) => s + (c.votes || 0), 0);
+
+                        html += `<div class="card mb-4">`;
+                        html += `<div class="card-header bg-light">`;
+                        html += `<div class="d-flex justify-content-between align-items-center">`;
+                        html += `<h5 class="mb-0">${sec.name} <span class="badge bg-primary ms-2">${total} votes</span></h5>`;
+                        html += `<small class="text-muted">${sec.description || ''}</small>`;
+                        html += `</div></div><div class="card-body">`;
+
+                        if (candidates.length === 0) {
+                            html += `<p class="text-muted">No candidates or votes for this section.</p>`;
+                        } else {
+                            for (const c of candidates) {
+                                const pct = total > 0 ? ((c.votes || 0) / total * 100).toFixed(1) : 0;
+                                html += `
+                                    <div class="progress-item">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div><strong>${c.name}</strong> <small class="text-muted">(${c.party || 'Independent'})</small></div>
+                                            <div>${c.votes || 0} votes (${pct}%)</div>
+                                        </div>
+                                        <div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        html += `</div></div>`;
+                    } catch (err) {
+                        console.error('Error loading results for section', sec.id, err);
+                    }
+                }
+
+                // If there are candidates not attached to a section (sectionId=0), fetch and show them too
+                try {
+                    const res0 = await fetch('http://localhost:8080/api/results?sectionId=0');
+                    const data0 = await res0.json();
+                    const candidates0 = data0.candidates || [];
+                    const total0 = data0.totalVotes || candidates0.reduce((s,c)=>s+(c.votes||0),0);
+                    if (candidates0.length) {
+                        html += `<div class="card mb-4"><div class="card-header bg-light"><h5 class="mb-0">Unassigned Section <span class="badge bg-primary ms-2">${total0} votes</span></h5></div><div class="card-body">`;
+                        for (const c of candidates0) {
+                            const pct = total0 > 0 ? ((c.votes || 0) / total0 * 100).toFixed(1) : 0;
+                            html += `
+                                <div class="progress-item">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div><strong>${c.name}</strong> <small class="text-muted">(${c.party || 'Independent'})</small></div>
+                                        <div>${c.votes || 0} votes (${pct}%)</div>
+                                    </div>
+                                    <div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>
+                                </div>
+                            `;
+                        }
+                        html += `</div></div>`;
+                    }
+                } catch (err) {
+                    // ignore
+                }
+
+                container.innerHTML = html || '<p class="text-center text-muted">No results available.</p>';
+            } catch (error) {
+                console.error('Results error:', error);
+                showToast('Error loading results', 'error');
+            }
+        }
+
+        async function loadVotingSectionsForVote() {
+            try {
+                const res = await fetch('http://localhost:8080/api/sections');
+                const data = await res.json();
+                const select = document.getElementById('sectionSelect');
+                if (!select) return;
+                loadedSections = data.sections || [];
+                select.innerHTML = '<option value="" disabled selected>-- Select Voting Section --</option>' + loadedSections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                if (!select.value && loadedSections.length > 0) {
+                    select.value = loadedSections[0].id; // Select first section by default
+                }
+                // reload candidates when user changes section
+                select.addEventListener('change', () => {
+                    // clear selection and reload candidates
+                    selectedCandidate = null;
+                    loadCandidates();
+                });
+            } catch (err) {
+                console.error('Error loading sections for vote', err);
+            }
+        }
+
+        function showSectionInfo() {
+            const select = document.getElementById('sectionSelect');
+            const row = document.getElementById('sectionInfoRow');
+            if (!select) return;
+            const id = select.value;
+            if (!id || id === '0') {
+                showToast('No specific section selected. You will be voting in all sections.', 'info');
+                row.classList.add('hidden');
+                return;
+            }
+
+            const sec = loadedSections.find(s => String(s.id) === String(id));
+            if (!sec) {
+                showToast('Section details not available', 'error');
+                return;
+            }
+
+            document.getElementById('sectionInfoName').textContent = sec.name || 'Unnamed Section';
+            document.getElementById('sectionInfoDesc').textContent = sec.description || 'No description';
+            document.getElementById('sectionInfoStart').textContent = sec.startDate || '-';
+            document.getElementById('sectionInfoEnd').textContent = sec.endDate || '-';
+            const statusEl = document.getElementById('sectionInfoStatus');
+            statusEl.textContent = sec.status || 'Unknown';
+            statusEl.className = 'badge ' + (sec.status === 'Active' ? 'bg-success' : 'bg-secondary');
+            // fetch vote count for this section
+            fetch(`http://localhost:8080/api/results?sectionId=${encodeURIComponent(id)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const sectionVotes = data.totalVotes || 0;
+                    // show vote count inside description area (append)
+                    document.getElementById('sectionInfoDesc').textContent = (sec.description || 'No description') + `\n\nVotes cast in this section: ${sectionVotes}`;
+                    row.classList.remove('hidden');
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }).catch(err => {
+                    console.error('Error fetching section results', err);
+                    row.classList.remove('hidden');
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+        }
+
+        function displayResults(data) {
+            // This function kept for backward compatibility; primary rendering is done in loadResults()
+            const container = document.getElementById('resultsContainer');
+            if (!data || !data.candidates) {
+                container.innerHTML = '<p class="text-center text-muted">No results available.</p>';
+                return;
+            }
+
+            const total = data.totalVotes || data.candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+            document.getElementById('totalVotes').textContent = total;
+            document.getElementById('totalCandidates').textContent = data.totalCandidates || data.candidates.length;
+            document.getElementById('turnoutRate').textContent = ((total / 100) * 100).toFixed(1) + '%';
+
+            container.innerHTML = data.candidates.map(c => {
+                const percentage = total > 0 ? ((c.votes || 0) / total * 100).toFixed(1) : 0;
+                return `
+                    <div class="progress-item">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>${c.name}</span>
+                            <span>${c.votes || 0} votes (${percentage}%)</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchAdminTab(event, tab) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.remove('hidden');
+            
+            if (tab === 'voters') {
+                loadVoters();
+            } else if (tab === 'candidates') {
+                loadAdminCandidates();
+            } else if (tab === 'sections') {
+                loadVotingSections();
+            } else if (tab === 'results') {
+                loadAdminResults();
+            }
+        }
+
+        async function loadAdminData() {
+            loadVoters();
+        }
+
+        async function loadVoters() {
+            try {
+                const response = await fetch('http://localhost:8080/api/voters');
+                const data = await response.json();
+                displayVoters(data.voters);
+            } catch (error) {
+                console.error('Error loading voters:', error);
+                showToast('Error loading voters', 'error');
+            }
+        }
+
+        function displayVoters(voters) {
+            const container = document.getElementById('votersContainer');
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Voter ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Voted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${voters.map(voter => `
+                                <tr>
+                                    <td>${voter.voterId}</td>
+                                    <td>${voter.name}</td>
+                                    <td>${voter.age || 0}</td>
+                                    <td>${voter.gender || 'Unknown'}</td>
+                                    <td>
+                                        <span class="badge bg-${voter.voted ? 'success' : 'secondary'}">
+                                            ${voter.voted ? 'Yes' : 'No'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteVoter('${voter.voterId}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function loadAdminCandidates() {
+            try {
+                const [candidatesRes, resultsRes] = await Promise.all([
+                    fetch('http://localhost:8080/api/candidates'),
+                    fetch('http://localhost:8080/api/results')
+                ]);
+                const candidatesData = await candidatesRes.json();
+                const resultsData = await resultsRes.json();
+
+                const votesByName = new Map();
+                if (Array.isArray(resultsData.candidates)) {
+                    resultsData.candidates.forEach(c => {
+                        votesByName.set(c.name, c.votes || 0);
+                    });
+                }
+
+                const candidatesWithVotes = (candidatesData.candidates || []).map(c => ({
+                    ...c,
+                    votes: votesByName.get(c.name) || 0
+                }));
+
+                displayAdminCandidates(candidatesWithVotes);
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+                showToast('Error loading candidates', 'error');
+            }
+        }
+
+        function displayAdminCandidates(candidates) {
+            const container = document.getElementById('adminCandidatesContainer');
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Party</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Votes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${candidates.map(candidate => `
+                                <tr>
+                                    <td>${candidate.id}</td>
+                                    <td>${candidate.name}</td>
+                                    <td>${candidate.party}</td>
+                                    <td>${candidate.age || 0}</td>
+                                    <td>${candidate.gender || 'Unknown'}</td>
+                                    <td>
+                                        <span class="badge bg-primary">${candidate.votes || 0}</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteCandidate(${candidate.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function loadAdminResults() {
+            try {
+                const [resultsRes, votersRes] = await Promise.all([
+                    fetch('http://localhost:8080/api/results'),
+                    fetch('http://localhost:8080/api/voters')
+                ]);
+                const resultsData = await resultsRes.json();
+                const votersData = await votersRes.json();
+                const registeredVoters = Array.isArray(votersData.voters) ? votersData.voters.length : 0;
+                displayAdminResults({ ...resultsData, registeredVoters });
+            } catch (error) {
+                console.error('Error loading results:', error);
+                showToast('Error loading results', 'error');
+            }
+        }
+
+        function displayAdminResults(data) {
+            const container = document.getElementById('adminResultsContainer');
+            const total = data.totalVotes || 0;
+            const registeredVoters = (typeof data.registeredVoters === 'number') ? data.registeredVoters : 0;
+            
+            container.innerHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <div class="number">${total}</div>
+                            <div>Total Votes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <div class="number">${data.totalCandidates || 0}</div>
+                            <div>Candidates</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <div class="number">${registeredVoters}</div>
+                            <div>Registered Voters</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <div class="number">${((total / (registeredVoters || 1)) * 100).toFixed(1)}%</div>
+                            <div>Turnout</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h5>Vote Distribution</h5>
+                        ${data.candidates.map(candidate => {
+                            const percentage = total > 0 ? (candidate.votes / total * 100).toFixed(1) : 0;
+                            return `
+                                <div class="progress-item">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>${candidate.name} (${candidate.party})</span>
+                                        <span>${candidate.votes} votes (${percentage}%)</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: ${percentage}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Delete functionality
+        async function deleteCandidate(id) {
+            if (!confirm('Are you sure you want to delete this candidate? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/candidate/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `candidateId=${id}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Candidate deleted successfully', 'success');
+                    loadAdminCandidates();
+                } else {
+                    showToast(data.message || 'Failed to delete candidate', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting candidate:', error);
+                showToast('Error deleting candidate', 'error');
+            }
+        }
+
+        async function deleteVoter(voterId) {
+            if (!confirm('Are you sure you want to delete this voter? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/voter/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `voterId=${encodeURIComponent(voterId)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Voter deleted successfully', 'success');
+                    loadVoters();
+                } else {
+                    showToast(data.message || 'Failed to delete voter', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting voter:', error);
+                showToast('Error deleting voter', 'error');
+            }
+        }
+
+        function showAddVoterForm() {
+            const voterId = prompt('Enter Voter ID:');
+            if (!voterId) return;
+
+            const name = prompt('Enter Voter Name:');
+            if (!name) return;
+
+            const ageStr = prompt('Enter Age (must be 18 or older):');
+            if (!ageStr) return;
+
+            const age = parseInt(ageStr);
+            if (isNaN(age) || age < 18) {
+                showToast('Voter must be at least 18 years old', 'error');
+                return;
+            }
+
+            const gender = prompt('Enter Gender (Male/Female/Other):');
+            if (!gender) return;
+            
+            addVoter(voterId, name, age, gender);
+        }
+
+        async function addVoter(voterId, name, age, gender) {
+            // Validate age again just to be safe
+            const ageNum = parseInt(age);
+            if (isNaN(ageNum) || ageNum < 18) {
+                showToast('Voter must be at least 18 years old', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/voter/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `voterId=${encodeURIComponent(voterId)}&name=${encodeURIComponent(name)}&age=${encodeURIComponent(ageNum)}&gender=${encodeURIComponent(gender)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Voter added successfully', 'success');
+                    loadVoters();
+                } else {
+                    showToast(data.message || 'Failed to add voter', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding voter:', error);
+                showToast('Error adding voter', 'error');
+            }
+        }
+
+        function showAddCandidateForm() {
+            const name = prompt('Enter Candidate Name:');
+            const party = prompt('Enter Party Name:');
+            const ageStr = prompt('Enter Age:');
+            const gender = prompt('Enter Gender (Male/Female/Other):');
+            // Ask for section if available
+            let sectionId = '0';
+            if (loadedSections && loadedSections.length > 0) {
+                const choices = loadedSections.map(s => `${s.id}: ${s.name}`).join('\n');
+                const sel = prompt('Enter Section ID for this candidate (or 0 for none):\n' + choices, '0');
+                if (sel) sectionId = sel;
+            } else {
+                const sel = prompt('Enter Section ID for this candidate (or 0 for none):', '0');
+                if (sel) sectionId = sel;
+            }
+            
+            if (name && party && ageStr && gender) {
+                addCandidate(name, party, ageStr, gender, sectionId);
+            }
+        }
+
+        async function addCandidate(name, party, age, gender, sectionId = '0') {
+            try {
+                const response = await fetch('http://localhost:8080/api/candidate/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `name=${encodeURIComponent(name)}&party=${encodeURIComponent(party)}&age=${encodeURIComponent(age)}&gender=${encodeURIComponent(gender)}&sectionId=${encodeURIComponent(sectionId)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Candidate added successfully', 'success');
+                    loadAdminCandidates();
+                } else {
+                    showToast(data.message || 'Failed to add candidate', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding candidate:', error);
+                showToast('Error adding candidate', 'error');
+            }
+        }
+
+        // Voting Sections Management
+        async function loadVotingSections() {
+            try {
+                const response = await fetch('http://localhost:8080/api/sections');
+                const data = await response.json();
+                displayVotingSections(data.sections || []);
+                // cache sections for quick access
+                loadedSections = data.sections || [];
+            } catch (error) {
+                console.error('Error loading voting sections:', error);
+                showToast('Error loading voting sections', 'error');
+                // Show demo data if server is not available
+                displayVotingSections([
+                    {
+                        id: 1,
+                        name: "Presidential Election 2024",
+                        description: "Main presidential election",
+                        startDate: "2024-01-01T00:00:00",
+                        endDate: "2024-12-31T23:59:59",
+                        status: "Active",
+                        voteCount: 0
+                    }
+                ]);
+            }
+        }
+
+        function displayVotingSections(sections) {
+            const container = document.getElementById('sectionsContainer');
+            if (sections.length === 0) {
+                container.innerHTML = '<p class="text-muted">No voting sections created yet.</p>';
+                return;
+            }
+
+            container.innerHTML = sections.map(section => `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title">${section.name}</h6>
+                                <p class="card-text text-muted">${section.description || 'No description'}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> ${section.startDate} - ${section.endDate}
+                                </small>
+                                <br>
+                                <span class="badge bg-${section.status === 'Active' ? 'success' : 'secondary'}">
+                                    ${section.status}
+                                </span>
+                                <span class="badge bg-info ms-2">
+                                    ${section.voteCount || 0} votes
+                                </span>
+                            </div>
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-sm btn-primary" onclick="editVotingSection(${section.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteVotingSection(${section.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function createVotingSection() {
+            const name = document.getElementById('sectionName').value.trim();
+            const description = document.getElementById('sectionDescription').value.trim();
+            const startDate = document.getElementById('sectionStartDate').value;
+            const endDate = document.getElementById('sectionEndDate').value;
+
+            // Validate inputs
+            if (!name || !startDate || !endDate) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (name.length < 5) {
+                showToast('Election name must be at least 5 characters long', 'error');
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const now = new Date();
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                showToast('Please enter valid dates and times', 'error');
+                return;
+            }
+
+            if (start >= end) {
+                showToast('End date and time must be after start date and time', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/sections/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `name=${encodeURIComponent(name)}&description=${encodeURIComponent(description)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Election section created successfully', 'success');
+                    document.getElementById('createSectionForm').reset();
+                    loadVotingSections();
+                    // Also reload sections in the voter interface if it exists
+                    const voterSection = document.getElementById('voterSection');
+                    if (voterSection) {
+                        loadVoterSections();
+                    }
+                } else {
+                    showToast(data.message || 'Failed to create election section', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating election section:', error);
+                showToast('Error creating election section. Please check server connection.', 'error');
+            }
+        }
+
+        async function deleteVotingSection(sectionId) {
+            if (!confirm('Are you sure you want to delete this voting section? This will also delete all associated votes and cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/sections/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `sectionId=${sectionId}`
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Voting section deleted successfully', 'success');
+                    loadVotingSections();
+                } else {
+                    showToast(data.message || 'Failed to delete voting section', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting voting section:', error);
+                showToast('Error deleting voting section', 'error');
+            }
+        }
+
+        function editVotingSection(sectionId) {
+            showToast('Edit functionality will be implemented in the next version', 'info');
+        }
+
+        async function deleteAllResults() {
+            if (!confirm('⚠️ WARNING: This will delete ALL election results and reset all votes.\nThis action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                // Delete all votes in one call
+                const response = await fetch('http://localhost:8080/api/votes/deleteAll', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('All election results have been cleared successfully', 'success');
+                    // Refresh all relevant displays
+                    loadAdminResults();
+                    loadVoters();
+                    loadResults();
+                } else {
+                    showToast(data.message || 'Failed to clear results', 'error');
+                }
+            } catch (error) {
+                console.error('Error clearing results:', error);
+                showToast('Error clearing election results', 'error');
+            }
+        }
+
+        async function isVotingTime() {
+            try {
+                // Get all sections
+                const response = await fetch('http://localhost:8080/api/sections');
+                const data = await response.json();
+                const sections = data.sections || [];
+                
+                // If no sections exist, allow deletion
+                if (sections.length === 0) {
+                    return true;
+                }
+                
+                // Check if any section is currently active
+                const now = new Date();
+                const hasActiveSection = sections.some(section => {
+                    const start = new Date(section.startDate);
+                    const end = new Date(section.endDate);
+                    return now >= start && now <= end;
+                });
+                
+                // Allow deletion if no section is active
+                return !hasActiveSection;
+            } catch (error) {
+                console.error('Error checking voting time:', error);
+                // If we can't check sections (e.g., server error), allow deletion
+                return true;
+            }
+        }
+
+        async function deleteAllVoters() {
+            if (!confirm('⚠️ WARNING: This will delete ALL voters from the system.\nThis action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/voters/deleteAll', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('All voters have been deleted successfully', 'success');
+                    // Refresh everything that might show voter data
+                    loadVoters();
+                    loadAdminResults();
+                } else {
+                    showToast(data.message || 'Failed to delete voters', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting voters:', error);
+                showToast('Error deleting voters', 'error');
+            }
+        }
+
+        async function deleteAllCandidates() {
+            if (!confirm('⚠️ WARNING: This will delete ALL candidates from the system.\nThis action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/candidates/deleteAll', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('All candidates have been deleted successfully', 'success');
+                    // Refresh everything that might show candidate data
+                    loadAdminCandidates();
+                    loadAdminResults();
+                } else {
+                    showToast(data.message || 'Failed to delete candidates', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting candidates:', error);
+                showToast('Error deleting candidates', 'error');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            showHome();
+            showToast('Logged out successfully', 'success');
+        }
+
+        // Initialize
+        showHome();
+    </script>
+</body>
+</html>
