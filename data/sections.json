@@ -1,0 +1,13 @@
+{
+    "sections": [
+        {
+            "id": 1,
+            "name": "Presidential Election 2025",
+            "description": "National Presidential Election",
+            "startDate": "2025-01-01T00:00:00",
+            "endDate": "2025-12-31T23:59:59",
+            "status": "Active",
+            "voteCount": 0
+        }
+    ]
+}

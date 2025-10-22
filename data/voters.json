@@ -1,0 +1,18 @@
+{
+    "voters": [
+        {
+            "voterId": "V001",
+            "name": "John Doe",
+            "age": 25,
+            "gender": "Male",
+            "voted": false
+        },
+        {
+            "voterId": "V002",
+            "name": "Jane Smith",
+            "age": 30,
+            "gender": "Female",
+            "voted": false
+        }
+    ]
+}

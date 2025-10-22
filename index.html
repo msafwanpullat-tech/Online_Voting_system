@@ -254,6 +254,13 @@
 </head>
 <body>
     <!-- Navigation -->
+    <!-- Demo Mode Banner -->
+    <div class="alert alert-warning text-center mb-0" role="alert">
+        <strong>Demo Mode:</strong> This is a static demo version running on GitHub Pages. Some features are limited.
+        <br>
+        <small>Demo Admin Login: username = "admin", password = "admin"</small>
+    </div>
+
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#home">
@@ -589,6 +596,35 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+    // Static data storage (simulating a database)
+    let staticData = {
+        voters: [],
+        candidates: [],
+        sections: [],
+        votes: []
+    };
+
+    // Load initial static data
+    async function loadStaticData() {
+        try {
+            const [voters, candidates, sections] = await Promise.all([
+                fetch('data/voters.json').then(r => r.json()),
+                fetch('data/candidates.json').then(r => r.json()),
+                fetch('data/sections.json').then(r => r.json())
+            ]);
+            staticData.voters = voters.voters;
+            staticData.candidates = candidates.candidates;
+            staticData.sections = sections.sections;
+            console.log('Static data loaded successfully');
+        } catch (err) {
+            console.error('Error loading static data:', err);
+            showToast('Error loading data. Some features may not work correctly.', 'error');
+        }
+    }
+
+    // Load static data when page loads
+    loadStaticData();
+
     let currentUser = null;
     let selectedCandidate = null;
     let loadedSections = [];
@@ -616,9 +652,8 @@
         }
 
         try {
-            const res = await fetch(`http://localhost:8080/api/voter/${encodeURIComponent(voterId)}`);
-            if (!res.ok) {
-                // not found
+            const voter = staticData.voters.find(v => v.voterId === voterId);
+            if (!voter) {
                 nameEl.textContent = 'Voter not found';
                 detailsEl.textContent = '';
                 votedEl.textContent = 'N/A';
@@ -627,22 +662,12 @@
                 return;
             }
 
-            const data = await res.json();
-            if (data && data.success && data.voter) {
-                const v = data.voter;
-                nameEl.textContent = v.name || v.voterId || 'Unknown';
-                detailsEl.textContent = `Age: ${v.age || '-'} | Gender: ${v.gender || '-'}`;
-                const hasVoted = v.voted === true || v.voted === 'true';
-                votedEl.textContent = hasVoted ? 'Yes' : 'No';
-                votedEl.className = hasVoted ? 'badge bg-success' : 'badge bg-secondary';
-                preview.classList.remove('hidden');
-            } else {
-                nameEl.textContent = 'Voter not found';
-                detailsEl.textContent = '';
-                votedEl.textContent = 'N/A';
-                votedEl.className = 'badge bg-secondary';
-                preview.classList.remove('hidden');
-            }
+            nameEl.textContent = voter.name || voter.voterId || 'Unknown';
+            detailsEl.textContent = `Age: ${voter.age || '-'} | Gender: ${voter.gender || '-'}`;
+            const hasVoted = voter.voted === true || voter.voted === 'true';
+            votedEl.textContent = hasVoted ? 'Yes' : 'No';
+            votedEl.className = hasVoted ? 'badge bg-success' : 'badge bg-secondary';
+            preview.classList.remove('hidden');
         } catch (err) {
             console.error('Error fetching voter details', err);
             nameEl.textContent = 'Error fetching details';
@@ -738,36 +763,24 @@
             }
 
             try {
-                const response = await fetch('http://localhost:8080/api/voter/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `voterId=${encodeURIComponent(voterId)}`
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    currentUser = { ...data.voter, sectionId };
-                    showToast(`Welcome, ${data.voter.name}!`, 'success');
+                const voter = staticData.voters.find(v => v.voterId === voterId);
+                
+                if (voter) {
+                    if (voter.voted) {
+                        showToast('This voter has already cast their vote', 'error');
+                        return;
+                    }
+                    currentUser = { ...voter, sectionId };
+                    showToast(`Welcome, ${voter.name}!`, 'success');
                     hideAll();
                     document.getElementById('votingPage').classList.remove('hidden');
                     loadCandidates(sectionId);
-                    
-                    // Auto-delete any unassigned votes from this voter
-                    try {
-                        await fetch('http://localhost:8080/api/votes/delete', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `sectionId=0&voterId=${encodeURIComponent(voterId)}`
-                        });
-                    } catch (err) {
-                        console.error('Error cleaning up unassigned votes:', err);
-                    }
                 } else {
-                    showToast(data.message || 'Invalid Voter ID', 'error');
+                    showToast('Invalid Voter ID', 'error');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showToast('Connection error. Please check if server is running.', 'error');
+                showToast('Error during login', 'error');
             }
         }
 
@@ -788,26 +801,15 @@
                 return;
             }
 
-            try {
-                const response = await fetch('http://localhost:8080/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    currentUser = { type: 'admin', username };
-                    showToast('Admin login successful', 'success');
-                    hideAll();
-                    document.getElementById('adminDashboardPage').classList.remove('hidden');
-                    loadAdminData();
-                } else {
-                    showToast(data.message || 'Invalid credentials', 'error');
-                }
-            } catch (error) {
-                console.error('Admin login error:', error);
-                showToast('Connection error. Please check if server is running.', 'error');
+            // Demo admin credentials
+            if (username === 'admin' && password === 'admin') {
+                currentUser = { type: 'admin', username };
+                showToast('Admin login successful (Demo Mode)', 'success');
+                hideAll();
+                document.getElementById('adminDashboardPage').classList.remove('hidden');
+                loadAdminData();
+            } else {
+                showToast('Invalid credentials (Demo: use admin/admin)', 'error');
             }
         }
 
@@ -825,10 +827,9 @@
                     return;
                 }
 
-                const url = `http://localhost:8080/api/candidates?sectionId=${encodeURIComponent(actualSectionId)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                displayCandidates(data.candidates || []);
+                // Filter candidates by section if needed
+                const candidates = staticData.candidates;
+                displayCandidates(candidates);
                 
                 // If section was passed in, set the select to match
                 if (sectionId) {
