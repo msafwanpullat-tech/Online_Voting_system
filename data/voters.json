@@ -1,18 +1,12 @@
 {
     "voters": [
-        {
-            "voterId": "V001",
-            "name": "John Doe",
-            "age": 25,
-            "gender": "Male",
-            "voted": false
-        },
-        {
-            "voterId": "V002",
-            "name": "Jane Smith",
-            "age": 30,
-            "gender": "Female",
-            "voted": false
-        }
+        { "voterId": "V001", "name": "John Doe", "age": 25, "gender": "Male", "voted": false },
+        { "voterId": "V002", "name": "Jane Smith", "age": 30, "gender": "Female", "voted": false },
+        { "voterId": "V003", "name": "Samuel Green", "age": 42, "gender": "Male", "voted": false },
+        { "voterId": "V004", "name": "Priya Patel", "age": 29, "gender": "Female", "voted": false },
+        { "voterId": "V005", "name": "Miguel Lopez", "age": 35, "gender": "Male", "voted": false },
+        { "voterId": "V006", "name": "Fatima Zahra", "age": 31, "gender": "Female", "voted": false },
+        { "voterId": "V007", "name": "Chen Wei", "age": 48, "gender": "Male", "voted": false },
+        { "voterId": "V008", "name": "Amelia Brown", "age": 22, "gender": "Female", "voted": false }
     ]
 }

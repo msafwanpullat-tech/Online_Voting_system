@@ -1,13 +1,6 @@
 {
     "sections": [
-        {
-            "id": 1,
-            "name": "Presidential Election 2025",
-            "description": "National Presidential Election",
-            "startDate": "2025-01-01T00:00:00",
-            "endDate": "2025-12-31T23:59:59",
-            "status": "Active",
-            "voteCount": 0
-        }
+        { "id": 1, "name": "Presidential Election 2025", "description": "National Presidential Election", "startDate": "2025-01-01T00:00:00", "endDate": "2025-12-31T23:59:59", "status": "Active", "voteCount": 0 },
+        { "id": 2, "name": "Local Council 2025", "description": "City council elections", "startDate": "2025-05-01T00:00:00", "endDate": "2025-05-02T23:59:59", "status": "Upcoming", "voteCount": 0 }
     ]
 }

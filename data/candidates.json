@@ -1,20 +1,8 @@
 {
     "candidates": [
-        {
-            "id": 1,
-            "name": "Alice Johnson",
-            "party": "Progressive Party",
-            "age": 45,
-            "gender": "Female",
-            "votes": 0
-        },
-        {
-            "id": 2,
-            "name": "Bob Wilson",
-            "party": "Conservative Party",
-            "age": 50,
-            "gender": "Male",
-            "votes": 0
-        }
+        { "id": 1, "name": "Alice Johnson", "party": "Progressive Party", "age": 45, "gender": "Female", "votes": 0 },
+        { "id": 2, "name": "Bob Wilson", "party": "Conservative Party", "age": 50, "gender": "Male", "votes": 0 },
+        { "id": 3, "name": "Lina Gomez", "party": "Green Party", "age": 38, "gender": "Female", "votes": 0 },
+        { "id": 4, "name": "Muhammad Ali", "party": "Unity Party", "age": 47, "gender": "Male", "votes": 0 }
     ]
 }
