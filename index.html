@@ -253,13 +253,7 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <!-- Demo Mode Banner -->
-    <div class="alert alert-warning text-center mb-0" role="alert">
-        <strong>Demo Mode:</strong> This is a static demo version running on GitHub Pages. Some features are limited.
-        <br>
-        <small>Demo Admin Login: username = "admin", password = "admin"</small>
-    </div>
+   
 
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
@@ -616,6 +610,21 @@
             staticData.candidates = candidates.candidates;
             staticData.sections = sections.sections;
             console.log('Static data loaded successfully');
+            // merge saved data from localStorage (if any)
+            const saved = localStorage.getItem('ovs_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // override only arrays if present
+                    if (Array.isArray(parsed.voters)) staticData.voters = parsed.voters;
+                    if (Array.isArray(parsed.candidates)) staticData.candidates = parsed.candidates;
+                    if (Array.isArray(parsed.sections)) staticData.sections = parsed.sections;
+                    if (Array.isArray(parsed.votes)) staticData.votes = parsed.votes;
+                    console.log('Loaded persisted demo data from localStorage');
+                } catch (e) {
+                    console.warn('Failed to parse saved demo data', e);
+                }
+            }
         } catch (err) {
             console.error('Error loading static data:', err);
             showToast('Error loading data. Some features may not work correctly.', 'error');
@@ -704,14 +713,11 @@
         }
 
         async function loadVoterSections() {
-            try {
-                const res = await fetch('http://localhost:8080/api/sections');
-                const data = await res.json();
-                const sections = data.sections || [];
+                // Use local static data to populate voter section select
                 const select = document.getElementById('voterSection');
-                
-                // Filter only active sections
+                if (!select) return;
                 const now = new Date();
+                const sections = staticData.sections || [];
                 const activeSections = sections.filter(section => {
                     const start = new Date(section.startDate);
                     const end = new Date(section.endDate);
@@ -722,13 +728,9 @@
                     select.innerHTML = '<option value="" disabled selected>No Active Voting Sections Available</option>';
                     showToast('No active voting sections available', 'error');
                 } else {
-                    select.innerHTML = '<option value="" disabled selected>-- Select Your Voting Section --</option>' + 
+                    select.innerHTML = '<option value="" disabled selected>-- Select Your Voting Section --</option>' +
                         activeSections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 }
-            } catch (err) {
-                console.error('Error loading voting sections:', err);
-                showToast('Error loading voting sections', 'error');
-            }
         }
 
         function showVoterLogin() {
@@ -828,7 +830,10 @@
                 }
 
                 // Filter candidates by section if needed
-                const candidates = staticData.candidates;
+                let candidates = staticData.candidates || [];
+                if (actualSectionId && String(actualSectionId) !== '0') {
+                    candidates = candidates.filter(c => String(c.sectionId || '0') === String(actualSectionId));
+                }
                 displayCandidates(candidates);
                 
                 // If section was passed in, set the select to match
@@ -884,19 +889,18 @@
 
             try {
                 const sectionId = document.getElementById('sectionSelect') ? document.getElementById('sectionSelect').value : 0;
-                const response = await fetch('http://localhost:8080/api/vote', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `voterId=${encodeURIComponent(currentUser.voterId)}&candidateId=${selectedCandidate.id}&sectionId=${sectionId}`
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast('Vote recorded successfully!', 'success');
-                    setTimeout(() => showResults(), 1500);
-                } else {
-                    showToast(data.message || 'Voting failed', 'error');
-                }
+                // Update candidate votes
+                const candidate = staticData.candidates.find(c => c.id === selectedCandidate.id);
+                if (candidate) candidate.votes = (candidate.votes || 0) + 1;
+                // Mark voter as voted
+                const voter = staticData.voters.find(v => v.voterId === currentUser.voterId);
+                if (voter) voter.voted = true;
+                // record vote
+                staticData.votes.push({ voterId: currentUser.voterId, candidateId: selectedCandidate.id, sectionId: sectionId, timestamp: new Date().toISOString() });
+                // persist
+                try { localStorage.setItem('ovs_data', JSON.stringify(staticData)); } catch (e) { console.warn('Save failed', e); }
+                showToast('Vote recorded successfully!', 'success');
+                setTimeout(() => showResults(), 1500);
             } catch (error) {
                 console.error('Vote error:', error);
                 showToast('Connection error. Please check if server is running.', 'error');
@@ -905,79 +909,34 @@
 
         async function loadResults() {
             try {
-                // Get list of sections first
-                const sectionsRes = await fetch('http://localhost:8080/api/sections');
-                const sectionsData = await sectionsRes.json();
-                const sections = sectionsData.sections || [];
-
-                // For overall totals, fetch /api/results without sectionId
-                const overallRes = await fetch('http://localhost:8080/api/results');
-                const overall = await overallRes.json();
-
-                document.getElementById('totalVotes').textContent = overall.totalVotes || 0;
-                document.getElementById('totalCandidates').textContent = overall.totalCandidates || (overall.candidates ? overall.candidates.length : 0);
-                // compute turnout using registered voters
-                try {
-                    const votersRes2 = await fetch('http://localhost:8080/api/voters');
-                    const votersData2 = await votersRes2.json();
-                    const registered = Array.isArray(votersData2.voters) ? votersData2.voters.length : 0;
-                    const turnout = registered > 0 ? ((overall.totalVotes || 0) / registered * 100).toFixed(1) + '%' : '0%';
-                    document.getElementById('turnoutRate').textContent = turnout;
-                } catch (err) {
-                    document.getElementById('turnoutRate').textContent = 'N/A';
-                }
+                // Build results from staticData
+                const sections = staticData.sections || [];
+                const candidates = staticData.candidates || [];
+                const totalVotes = (candidates || []).reduce((s, c) => s + (c.votes || 0), 0);
+                document.getElementById('totalVotes').textContent = totalVotes;
+                document.getElementById('totalCandidates').textContent = candidates.length;
+                const registered = (staticData.voters || []).length;
+                const turnout = registered > 0 ? ((totalVotes / registered) * 100).toFixed(1) + '%' : '0%';
+                document.getElementById('turnoutRate').textContent = turnout;
 
                 const container = document.getElementById('resultsContainer');
-                // For each section, fetch section-specific results and render a card
                 let html = '';
 
                 for (const sec of sections) {
-                    try {
-                        const res = await fetch(`http://localhost:8080/api/results?sectionId=${encodeURIComponent(sec.id)}`);
-                        const data = await res.json();
-                        const candidates = data.candidates || [];
-                        const total = data.totalVotes || candidates.reduce((s, c) => s + (c.votes || 0), 0);
+                    const secCandidates = candidates.filter(c => String(c.sectionId || '0') === String(sec.id));
+                    const total = secCandidates.reduce((s, c) => s + (c.votes || 0), 0);
+                    html += `<div class="card mb-4">`;
+                    html += `<div class="card-header bg-light">`;
+                    html += `<div class="d-flex justify-content-between align-items-center">`;
+                    html += `<h5 class="mb-0">${sec.name} <span class="badge bg-primary ms-2">${total} votes</span></h5>`;
+                    html += `<small class="text-muted">${sec.description || ''}</small>`;
+                    html += `</div></div><div class="card-body">`;
 
-                        html += `<div class="card mb-4">`;
-                        html += `<div class="card-header bg-light">`;
-                        html += `<div class="d-flex justify-content-between align-items-center">`;
-                        html += `<h5 class="mb-0">${sec.name} <span class="badge bg-primary ms-2">${total} votes</span></h5>`;
-                        html += `<small class="text-muted">${sec.description || ''}</small>`;
-                        html += `</div></div><div class="card-body">`;
-
-                        if (candidates.length === 0) {
-                            html += `<p class="text-muted">No candidates or votes for this section.</p>`;
-                        } else {
-                            for (const c of candidates) {
-                                const pct = total > 0 ? ((c.votes || 0) / total * 100).toFixed(1) : 0;
-                                html += `
-                                    <div class="progress-item">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div><strong>${c.name}</strong> <small class="text-muted">(${c.party || 'Independent'})</small></div>
-                                            <div>${c.votes || 0} votes (${pct}%)</div>
-                                        </div>
-                                        <div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>
-                                    </div>
-                                `;
-                            }
-                        }
-
-                        html += `</div></div>`;
-                    } catch (err) {
-                        console.error('Error loading results for section', sec.id, err);
-                    }
-                }
-
-                // If there are candidates not attached to a section (sectionId=0), fetch and show them too
-                try {
-                    const res0 = await fetch('http://localhost:8080/api/results?sectionId=0');
-                    const data0 = await res0.json();
-                    const candidates0 = data0.candidates || [];
-                    const total0 = data0.totalVotes || candidates0.reduce((s,c)=>s+(c.votes||0),0);
-                    if (candidates0.length) {
-                        html += `<div class="card mb-4"><div class="card-header bg-light"><h5 class="mb-0">Unassigned Section <span class="badge bg-primary ms-2">${total0} votes</span></h5></div><div class="card-body">`;
-                        for (const c of candidates0) {
-                            const pct = total0 > 0 ? ((c.votes || 0) / total0 * 100).toFixed(1) : 0;
+                    if (secCandidates.length === 0) {
+                        html += `<p class="text-muted">No candidates or votes for this section.</p>`;
+                    } else {
+                        for (const c of secCandidates) {
+                            const pct = total > 0 ? ((c.votes || 0) / total * 100).toFixed(1) : 0;
                             html += `
                                 <div class="progress-item">
                                     <div class="d-flex justify-content-between mb-2">
@@ -988,10 +947,29 @@
                                 </div>
                             `;
                         }
-                        html += `</div></div>`;
                     }
-                } catch (err) {
-                    // ignore
+
+                    html += `</div></div>`;
+                }
+
+                // Unassigned candidates (sectionId=0)
+                const unassigned = candidates.filter(c => !c.sectionId || String(c.sectionId) === '0');
+                if (unassigned.length) {
+                    const total0 = unassigned.reduce((s, c) => s + (c.votes || 0), 0);
+                    html += `<div class="card mb-4"><div class="card-header bg-light"><h5 class="mb-0">Unassigned Section <span class="badge bg-primary ms-2">${total0} votes</span></h5></div><div class="card-body">`;
+                    for (const c of unassigned) {
+                        const pct = total0 > 0 ? ((c.votes || 0) / total0 * 100).toFixed(1) : 0;
+                        html += `
+                            <div class="progress-item">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div><strong>${c.name}</strong> <small class="text-muted">(${c.party || 'Independent'})</small></div>
+                                    <div>${c.votes || 0} votes (${pct}%)</div>
+                                </div>
+                                <div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>
+                            </div>
+                        `;
+                    }
+                    html += `</div></div>`;
                 }
 
                 container.innerHTML = html || '<p class="text-center text-muted">No results available.</p>';
@@ -1002,25 +980,17 @@
         }
 
         async function loadVotingSectionsForVote() {
-            try {
-                const res = await fetch('http://localhost:8080/api/sections');
-                const data = await res.json();
-                const select = document.getElementById('sectionSelect');
-                if (!select) return;
-                loadedSections = data.sections || [];
-                select.innerHTML = '<option value="" disabled selected>-- Select Voting Section --</option>' + loadedSections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                if (!select.value && loadedSections.length > 0) {
-                    select.value = loadedSections[0].id; // Select first section by default
-                }
-                // reload candidates when user changes section
-                select.addEventListener('change', () => {
-                    // clear selection and reload candidates
-                    selectedCandidate = null;
-                    loadCandidates();
-                });
-            } catch (err) {
-                console.error('Error loading sections for vote', err);
-            }
+            // Populate sectionSelect from staticData
+            const select = document.getElementById('sectionSelect');
+            if (!select) return;
+            loadedSections = staticData.sections || [];
+            select.innerHTML = '<option value="0">-- All Sections --</option>' + (loadedSections.length ? loadedSections.map(s => `<option value="${s.id}">${s.name}</option>`).join('') : '');
+            if (!select.value && loadedSections.length > 0) select.value = loadedSections[0].id;
+            // reload candidates when user changes section
+            select.addEventListener('change', () => {
+                selectedCandidate = null;
+                loadCandidates(select.value);
+            });
         }
 
         function showSectionInfo() {
@@ -1114,10 +1084,9 @@
         }
 
         async function loadVoters() {
+            // Load voters from static data
             try {
-                const response = await fetch('http://localhost:8080/api/voters');
-                const data = await response.json();
-                displayVoters(data.voters);
+                displayVoters(staticData.voters || []);
             } catch (error) {
                 console.error('Error loading voters:', error);
                 showToast('Error loading voters', 'error');
@@ -1166,26 +1135,8 @@
 
         async function loadAdminCandidates() {
             try {
-                const [candidatesRes, resultsRes] = await Promise.all([
-                    fetch('http://localhost:8080/api/candidates'),
-                    fetch('http://localhost:8080/api/results')
-                ]);
-                const candidatesData = await candidatesRes.json();
-                const resultsData = await resultsRes.json();
-
-                const votesByName = new Map();
-                if (Array.isArray(resultsData.candidates)) {
-                    resultsData.candidates.forEach(c => {
-                        votesByName.set(c.name, c.votes || 0);
-                    });
-                }
-
-                const candidatesWithVotes = (candidatesData.candidates || []).map(c => ({
-                    ...c,
-                    votes: votesByName.get(c.name) || 0
-                }));
-
-                displayAdminCandidates(candidatesWithVotes);
+                const candidates = staticData.candidates || [];
+                displayAdminCandidates(candidates.map(c => ({ ...c, votes: c.votes || 0 })));
             } catch (error) {
                 console.error('Error loading candidates:', error);
                 showToast('Error loading candidates', 'error');
@@ -1234,14 +1185,10 @@
 
         async function loadAdminResults() {
             try {
-                const [resultsRes, votersRes] = await Promise.all([
-                    fetch('http://localhost:8080/api/results'),
-                    fetch('http://localhost:8080/api/voters')
-                ]);
-                const resultsData = await resultsRes.json();
-                const votersData = await votersRes.json();
-                const registeredVoters = Array.isArray(votersData.voters) ? votersData.voters.length : 0;
-                displayAdminResults({ ...resultsData, registeredVoters });
+                const candidates = staticData.candidates || [];
+                const total = candidates.reduce((s, c) => s + (c.votes || 0), 0);
+                const registeredVoters = (staticData.voters || []).length;
+                displayAdminResults({ candidates, totalVotes: total, totalCandidates: candidates.length, registeredVoters });
             } catch (error) {
                 console.error('Error loading results:', error);
                 showToast('Error loading results', 'error');
